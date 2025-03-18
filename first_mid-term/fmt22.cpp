@@ -1,6 +1,6 @@
 #include <iostream>
-#include <iomanip>
 #include <algorithm>
+#include <iomanip>
 #include <cstring>
 #include <cctype>
 #include <cmath>
@@ -12,72 +12,45 @@ struct Proizvod {
     int quantity;
 };
 struct Narachka {
-    char name[15];
+    char name[15]; //imeto na chovekot koj ja pravi narachkata
     Proizvod proizvodi[10];
-    int odelno_narachani[10]; //za sekoj proizvod, kolku pati e narachan
-    int n;//broj na proizvodi na narachkata
+    int n[10]; //za sekoj proizvod, kolku pati e narachan
+    int all; //brojot na proizvodi vo narachkata
 };
 void pecatiFaktura(Narachka n) {
-    cout<<"Faktura za "<<n.name<<endl;
-    for (int i=0;i<n.n;i++) {
-        for (int j=0;j<n.n;j++) {
-            if (n.proizvodi[j].quantity<n.odelno_narachani[j]) {
-                cout<<"Fakturata ne moze da se izgotvi"<<endl;
-                return;
+    cout << "Faktura za " << n.name << endl;
+    int max_sum=0;
+    for (int i=0;i<n.all;i++) { //mine niz site proizvodi
+        if (n.proizvodi[i].quantity - n.n[i] < 0) {
+            cout<<"Fakturata ne moze da se izgotvi"<<endl;
+            return;
+        }
+    }
+    for (int i=0;i<n.all;i++) {
+        for (int j=0;j<n.all-i-1;j++) {
+            if (strcmp(n.proizvodi[j].code,n.proizvodi[j+1].code) > 0) {
+                swap(n.proizvodi[j],n.proizvodi[j+1]);
             }
         }
     }
-    int total=0;
-    /*
-    int n;
-    cin>>n;
-    char **names = new char*[n];
-    sort(names,names+n, [] (const char* a, const char* b) {
-        return strcmp(a, b) < 0;
-    });
-     */
-    for (int i=0;i<n.n-1;i++) {
-        if (n.proizvodi[i].code[0]>n.proizvodi[i+1].code[0]) {
-            swap(n.proizvodi[i],n.proizvodi[i+1]);
-        }else if (n.proizvodi[i].code[1]>n.proizvodi[i+1].code[1]) {
-            swap(n.proizvodi[i],n.proizvodi[i+1]);
-        }
+    for (int i=0;i<n.all;i++) {
+        max_sum+=n.n[i]*n.proizvodi[i].price;
+        cout<<n.proizvodi[i].code<<" "<<n.proizvodi[i].price<<" "<<n.n[i]<<" "<<n.n[i]*n.proizvodi[i].price<<endl;
     }
-    for (int i=0;i<n.n;i++) {
-        cout<<n.proizvodi[i].code<<" "<<n.proizvodi[i].price<<" "<<n.odelno_narachani[i]<<" "<<n.odelno_narachani[i]*n.proizvodi[i].price<<endl;
-        n.proizvodi[i].quantity-=n.odelno_narachani[i]; //azhuriranje
-        total+=n.odelno_narachani[i]*n.proizvodi[i].price;
-    }
-    cout<<"Vkupnata suma na fakturata e "<<total<<endl;
-    //tuka e delot kadeshto sigurno mozheme da ja napravime narachkata, kod+cena+broj_na_narachani_proizvodi+vkupna_cena_proizvod
-    //i azhuriraj go brojot na dostapni kvantitet za toj proizvod otkatko kje se zemat del od niv vo narachkata
-    //pechati edna faktura za edna naracha(n), "Faktura za " XXXXXX, t.s. XXXXX e imeto na liceto chija e narachkata
+    cout<<"Vkupnata suma na fakturata e "<<max_sum<<endl;
+    //pechati name za imeto na chovekot koj ja ima narachkata "n";
+    //ako site proizvodi od narachkata "n" mozhat da se narachaat (gi ima vo magacinot, "quantity"), togash pechati: code price quantity vkupnacena;
+    //azhuriraj go brojot na dostapni proizvodi za sekoj proizvod
 }
 int main() {
     Narachka narachka;
-    cin>>narachka.name;
-    // внеси го името лицето кое ја прави нарачката
-    cin>>narachka.n;
-    // внеси го бројот на порачани производи во нарачката
-    //за секој од нарачаните производи се внесуваат информации
-    for (int i = 0; i < narachka.n; ++i) {
-        cin>>narachka.proizvodi[i].code;
-        // внеси код
-        cin>>narachka.proizvodi[i].price;
-        // внеси единицчна цена
-        cin>>narachka.proizvodi[i].quantity;
-        // внеси број на производи во магацин
+    cin>>narachka.name>>narachka.all;
+    for (int i=0;i<narachka.all;i++) {
+        cin>>narachka.proizvodi[i].code>>narachka.proizvodi[i].price>>narachka.proizvodi[i].quantity;
     }
-    //за секој производ се внесува колку такви производи се порачани во нарачката
-    int j;
-    for (j = 0; j < narachka.n; ++j) {
-        cin>>narachka.odelno_narachani[j];
-        //се внесува број на производи во нарачката
+    for (int i=0;i<narachka.all;i++) {
+        cin>>narachka.n[i];
     }
-
     pecatiFaktura(narachka);
-    // повик на функцијата pecatiFaktura
-
-
     return 0;
 }
