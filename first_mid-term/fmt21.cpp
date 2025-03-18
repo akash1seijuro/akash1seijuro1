@@ -1,41 +1,44 @@
 #include <iostream>
+#include <algorithm>
+#include <iomanip>
 #include <cstring>
+#include <cctype>
+#include <cmath>
+#include <fstream>
 using namespace std;
 struct Tanc {
-    char ime[15];
-    char zemja[15];
+    char name[15];
+    char country[15];
 };
 struct Tancer {
-    char ime[20];
-    char prezime[20];
-    Tanc niza[5]; //max 5 tanci mozhe da igra 1 tancher
+    char name[20];
+    char surname[20];
+    Tanc tanci[5];
 };
 void tancuvanje(Tancer *t, int n, char *zemja) {
-    for (int i=0;i<n;i++) {
-        for (int j=0;j<3;j++) {
-            if (strcmp(t[i].niza[j].zemja, zemja) == 0) {
-                cout<<t[i].ime<<" "<<t[i].prezime<<", "<<t[i].niza[j].ime<<endl;
-                break; //dosta e edno pojavuvanje
+    for (int i=0;i<n;i++) { //mine niz site tancheri
+        for (int j=0;j<3;j++) { //mine niz site tancovi na sekoj tancher poedinechno
+            if (strcmp(t[i].tanci[j].country,zemja) == 0) {
+                cout<<t[i].name<<" "<<t[i].surname<<", "<<t[i].tanci[j].name<<endl;
+                break; //dovolno e 1
             }
         }
-        //vo poseben red ispechati ime i prezima na tancherite koi igraat 1+ tanc od zemjata koja e vo arg. dadena
     }
+    //pechati vo poseben red name i surname na tancherite (mozhe 2+) koi znaat da igraat 1+ tanc od zemjata dadena vo argument char *zemja
+    //ime prezime imenatanc
 }
-int main()
-{
-    int i, j, n;
-    char zemja[15];
-    Tancer tanceri[5];
-    cin >> n;
-    for(i = 0; i < n; i++){
-        cin >> tanceri[i].ime;
-        cin >> tanceri[i].prezime;
-        for(j = 0; j < 3; j++){
-            cin >> tanceri[i].niza[j].ime;
-            cin >> tanceri[i].niza[j].zemja;
+int main() {
+    int n;
+    cin>>n;
+    Tancer t[n];
+    for (int i=0;i<n;i++) {
+        cin>>t[i].name>>t[i].surname;
+        for (int j=0;j<3;j++) {
+            cin>>t[i].tanci[j].name>>t[i].tanci[j].country;
         }
     }
-    cin >> zemja;
-    tancuvanje(tanceri, n, zemja);
+    char zemja[20];
+    cin>>zemja;
+    tancuvanje(t, n, zemja);
     return 0;
 }
