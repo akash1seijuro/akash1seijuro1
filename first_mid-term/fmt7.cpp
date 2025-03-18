@@ -1,78 +1,66 @@
 #include <iostream>
+#include <algorithm>
+#include <iomanip>
 #include <cstring>
 #include <cctype>
 #include <cmath>
-#include <iomanip>
 #include <fstream>
 using namespace std;
 struct Vozenje {
-    char ime[100];
-    int traenje;
-    double cena;
-    int daliPopust;
-    void print() {
-        cout<<ime<<" "<<traenje<<" "<<fixed<<setprecision(2)<<cena<<endl;
-    }
+    char name[100];
+    int duration;
+    double price;
+    bool offer;
 };
 struct ZabavenPark {
-    char ime[100];
-    char lokacija[100];
+    char name[100];
+    char location[100];
+    Vozenje vozenja[100];
     int n;
-    Vozenje niza[100];
-    void print() {
-        cout<<ime<<" "<<lokacija<<endl;
-        for (int i=0;i<n;i++) {
-            niza[i].print();
-        }
-    }
 };
-void najdobar_park(ZabavenPark *zp, int n) {
-    int most_offers_index=0, most_offers=0, most_minutes=0;
-    for (int i=0;i<n;i++) {
-        int current_offers=0, current_minutes=0;
-        if (i==0) {
-            most_offers_index=0;
-            for (int k=0;k<zp[0].n;k++) {
-                most_offers+=zp[0].niza[k].daliPopust;
-                most_minutes+=zp[0].niza[k].traenje;
-            }
-        }
-        for (int j=0;j<zp[i].n;j++) {
-            current_offers+=zp[i].niza[j].daliPopust;
-            current_minutes+=zp[i].niza[j].traenje;
-        }
-        if ((current_offers==most_offers && current_minutes>=most_minutes) || current_offers>most_offers) {
-            most_offers_index=i;
-            most_minutes=current_minutes;
-            most_offers=current_offers;
-        }
-    }
-    cout<<"Najdobar park: "<<zp[most_offers_index].ime<<" "<<zp[most_offers_index].lokacija<<endl;
-}
 void pecati(ZabavenPark *zp, int n) {
     for (int i=0;i<n;i++) {
-        zp[i].print();
+        cout<<zp[i].name<<" "<<zp[i].location<<endl;
+        for (int j=0;j<zp[i].n;j++) {
+            cout<<zp[i].vozenja[j].name<<" "<<zp[i].vozenja[j].duration<<" "<<fixed<<setprecision(2)<<zp[i].vozenja[j].price<<endl;
+        }
     }
 }
+void najdobar_park(ZabavenPark *zp, int n) {
+    int index_zp_cheapest_park=0, max_offers=0, max_duration=0;
+    for (int i=0;i<n;i++) {
+        int current_offers=0, current_duration=0;
+        for (int j=0;j<zp[i].n;j++) {
+            current_duration+=zp[i].vozenja[j].duration;
+            if (zp[i].vozenja[j].offer) {
+                current_offers++;
+            }
+        }
+        if (current_offers>max_offers) {
+            max_offers=current_offers;
+            max_duration=current_duration;
+            index_zp_cheapest_park=i;
+        }else if (current_offers==max_offers) {
+            if (current_duration>max_duration) {
+                max_duration=current_duration;
+                index_zp_cheapest_park=i;
+            }
+        }
+    }
+    cout<<"Najdobar park: "<<zp[index_zp_cheapest_park].name<<" "<<zp[index_zp_cheapest_park].location<<endl;
+    //pechati name i location na parkot koj ima najgolem broj offer's, ako se 2+ togash onoj so najdolgo traenje (od site vozenja, ne samo offer)
+}
+
+
 int main()
 {
-    int i, j, n, broj;
-    //kreiraj niza od maksimum 100 zabavni parkovi
+    int n;
+    cin>>n;
     ZabavenPark ff[100];
-    scanf("%d", &n);
-    //citanje na podatocite
-    for (i = 0; i < n; i++){
-        //ime na festivalot
-        cin>>ff[i].ime;
-        //mesto
-        cin>>ff[i].lokacija;
-        //broj na filmovi
-        cin>>ff[i].n;
-        for (j = 0; j < ff[i].n; j++){
-            cin>>ff[i].niza[j].ime; 			/* Ime na filmot */
-            cin>>ff[i].niza[j].traenje; 		/* Vremetraenje   */
-            cin>>ff[i].niza[j].cena;	/* Cena */
-            cin>>ff[i].niza[j].daliPopust;	/* Popust */
+    for (int i=0;i<n;i++) {
+        cin>>ff[i].name>>ff[i].location>>ff[i].n;
+        for (int j=0;j<ff[i].n;j++) {
+            cin>>ff[i].vozenja[j].name>>ff[i].vozenja[j].duration>>ff[i].vozenja[j].price>>ff[i].vozenja[j].offer;
         }
     }
     pecati(ff,n);
