@@ -1,69 +1,56 @@
 #include <iostream>
+#include <algorithm>
 #include <iomanip>
 #include <cstring>
+#include <cctype>
+#include <cmath>
+#include <fstream>
 using namespace std;
 struct Pacient {
-    char ime[100];
-    int zdrastveno;
-    int pregledi;
-};
-struct doktor {
     char name[100];
-    int br_pac;
-    Pacient niza[200];
-    double cena;
+    bool insurance;
+    int n; //broj na pregledi vo posledniot mesec
 };
-void najuspesen_doktor(doktor *d, int n) {
-    double current_max=0.0, max_max=0.0;
-    int max_max_index=0;
-    int current_all_pregledi=0, max_all_pregledi=0;
-    int current_pregledi=0, max_pregledi=0; //privatnite za vo print-ot dole trebaat
+struct MaticenDoktor {
+    char name[100];
+    int n; //broj na pacienti
+    Pacient pacienti[200];
+    double price; //cena na pregled
+};
+void najuspesen_doktor(MaticenDoktor *md, int n) {
+    int index_md_best=0;
+    double max_sum=0.0,current_sum=0.0;
+    int max_visits=0,current_visits=0;
     for (int i=0;i<n;i++) {
-        current_max=0,current_all_pregledi=0,current_pregledi=0;
-        for (int j=0;j<d[i].br_pac;j++) {
-            current_all_pregledi+=d[i].niza[j].pregledi;
-            if (d[i].niza[j].zdrastveno == 0) {
-                current_pregledi+=d[i].niza[j].pregledi;
-                current_max+=d[i].niza[j].pregledi;
+        current_visits=0,current_sum=0.0;
+        for (int j=0;j<md[i].n;j++) {
+            current_visits+=md[i].pacienti[j].n;
+            if (!(md[i].pacienti[j].insurance)) {
+                current_sum+=md[i].pacienti[j].n*md[i].price;
             }
         }
-        if (current_max>max_max) {
-            max_max=current_max;
-            max_max_index=i;
-            max_all_pregledi=current_all_pregledi;
-            if (current_pregledi>max_pregledi) {
-                max_pregledi=current_pregledi;
-            }
-        }else if (current_max==max_max) {
-            if (current_all_pregledi>max_all_pregledi) {
-                max_max_index=i;
-                max_max=current_max;
-                max_all_pregledi=current_all_pregledi;
-                if (current_pregledi>max_pregledi) {
-                    max_pregledi=current_pregledi;
-                }
+        if (current_sum>max_sum) {
+            max_sum=current_sum;
+            max_visits=current_visits;
+            index_md_best=i;
+        }else if (current_sum==max_sum) {
+            if (current_visits>max_visits) {
+                max_visits=current_visits;
+                index_md_best=i;
             }
         }
     }
-    cout<<d[max_max_index].name<<" "<<fixed<<setprecision(2)<<max_pregledi*d[max_max_index].cena<<" "<<max_all_pregledi<<endl;
+    cout<<md[index_md_best].name<<" "<<fixed<<setprecision(2)<<max_sum<<" "<<max_visits<<endl;
+    //pechati name, zarabotena suma i broj na pregledi na doktorot koj zarabotil najvekje (samo na pacienti koi se insurance==false), ako se 2+ togash togash onoj koj ima najvekje pregledi (site pacienti)
 }
-int main()
-{
-    int i, j, n, broj;
-    doktor md[200];
+int main() {
+    int n;
     cin>>n;
-    for (i = 0; i < n; i++){
-        //ime na doktor
-        cin>>md[i].name;
-        //broj na pacienti
-        cin>>md[i].br_pac;
-        //cena na pregled
-        cin>>md[i].cena;
-
-        for (j = 0; j < md[i].br_pac; j++){
-            cin>>md[i].niza[j].ime;
-            cin>>md[i].niza[j].zdrastveno;
-            cin>>md[i].niza[j].pregledi;
+    MaticenDoktor md[n];
+    for (int i=0;i<n;i++) {
+        cin>>md[i].name>>md[i].n>>md[i].price;
+        for (int j=0;j<md[i].n;j++) {
+            cin>>md[i].pacienti[j].name>>md[i].pacienti[j].insurance>>md[i].pacienti[j].n;
         }
     }
     najuspesen_doktor(md, n);
