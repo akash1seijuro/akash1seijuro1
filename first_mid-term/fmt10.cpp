@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <iomanip>
 #include <cstring>
 #include <cctype>
@@ -15,48 +16,37 @@ struct KompjuterskaIgra {
     Igrac lista[30];
     int n;
 };
-void najdobarIgrac(KompjuterskaIgra *lista, int n) {
-    int max_index=0,max=0;
+void najdobarIgrac(KompjuterskaIgra *ki, int n) {
+    int index_ki_best=0,index_ki_i_best=0;
+    int highest_points=0,highest_level=0;
     for (int i=0;i<n;i++) {
-        if (lista[i].n>max) {
-            max=lista[i].n;
-            max_index=i;
-        }
-    }
-    int max_poeni=0,max_poeni_index=0,max_nivo=0;
-    for (int i=0;i<lista[max_index].n;i++) {
-        if (lista[max_index].lista[i].poeni==max_poeni) {
-            if (lista[max_index].lista[i].nivo>max_nivo) {
-                max_nivo=lista[max_index].lista[i].nivo;
-                max_poeni=lista[max_index].lista[i].poeni;
-                max_poeni_index=lista[max_index].lista[i].poeni;
+        for (int j=0;j<ki[i].n;j++) {
+            if (ki[i].lista[j].poeni>highest_points) {
+                highest_points=ki[i].lista[j].poeni;
+                highest_level=ki[i].lista[j].nivo;
+                index_ki_best=i;
+                index_ki_i_best=j;
+            }else if (ki[i].lista[j].poeni==highest_level) {
+                if (ki[i].lista[j].nivo>highest_level) {
+                    highest_level=ki[i].lista[j].nivo;
+                    index_ki_best=i;
+                    index_ki_i_best=j;
+                }
             }
         }
-        if (lista[max_index].lista[i].poeni>max_poeni) {
-            max_nivo=lista[max_index].lista[i].nivo;
-            max_poeni=lista[max_index].lista[i].poeni;
-            max_poeni_index=i;
-        }
     }
-    cout<<"Najdobar igrac e igracot so korisnicko ime "<<lista[max_index].lista[max_poeni_index].korisnickoIme<<" koj ja igra igrata "<<lista[max_index].ime<<endl;
+    cout<<"Najdobar igrac e igracot so korisnicko ime "<<ki[index_ki_best].lista[index_ki_i_best].korisnickoIme<<" koj ja igra igrata "<<ki[index_ki_best].ime<<endl;
+    //pechati korisnickoIme na najdobriot igrach (najvekje poeni) na igrata so najgolem n, ako se 2+ togash koj e povisoko nivo
 }
 int main() {
-    int n,m;
-    char ime[20];
-    cin>>n;
-    KompjuterskaIgra poleigri[100];
-    for (int i=0; i<n; i++) {
-        KompjuterskaIgra nova;
-        cin>>nova.ime>>nova.n;
-        Igrac pole[30];
-        for (int j=0; j<nova.n; j++) {
-            Igrac nov;
-            cin>>nov.korisnickoIme>>nov.nivo>>nov.poeni;
-            nova.lista[j]=nov;
+    int n;
+    cin>>n; //broj na KompjuterskaIgra
+    KompjuterskaIgra ki[n]; //kreirame nizata
+    for (int i=0;i<n;i++) {
+        cin>>ki[i].ime>>ki[i].n;
+        for (int j=0;j<ki[i].n;j++) {
+            cin>>ki[i].lista[j].korisnickoIme>>ki[i].lista[j].nivo>>ki[i].lista[j].poeni;
         }
-        poleigri[i]=nova;
     }
-
-    najdobarIgrac(poleigri,n);
-    return 0;
+    najdobarIgrac(ki,n);
 }
