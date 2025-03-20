@@ -1,114 +1,119 @@
-#include<iostream>
-#include<iomanip>
-#include<cstring>
-#include<cctype>
-#include<cmath>
-#include<fstream>
+#include <iostream>
+#include <algorithm>
+#include <iomanip>
+#include <cstring>
+#include <cctype>
+#include <cmath>
+#include <fstream>
 using namespace std;
-enum Extension { txt, pdf, exe };
+enum Extension {
+	pdf=0, txt, exe
+};
 class File {
 private:
-    char* name;
-    char* owner;
-    int size;
-    Extension ext;
+	char *name;
+	Extension ext;
+	char *owner;
+	int size;
+	void copy(const File &f) {
+		this->name = new char[strlen(f.name) + 1];
+		strcpy(this->name, f.name);
+		this->ext = f.ext;
+		this->owner = new char[strlen(f.owner) + 1];
+		strcpy(this->owner, f.owner);
+		this->size = f.size;
+	}
 public:
-    File(const char* fileName="", const char* fileOwner="", int fileSize=0, Extension ext=txt) {
-        name = new char[strlen(fileName) + 1];
-        strcpy(name, fileName);
-        owner = new char[strlen(fileOwner) + 1];
-        strcpy(owner, fileOwner);
-        size = fileSize;
-        this->ext = ext;
-    }
-    File(const File& f) {
-        name = new char[strlen(f.name) + 1];
-        strcpy(name, f.name);
-        owner = new char[strlen(f.owner) + 1];
-        strcpy(owner, f.owner);
-        size = f.size;
-        ext = f.ext;
-    }
-    ~File() {
-        delete[] name;
-        delete[] owner;
-    }
-    File& operator=(const File& f) {
-        if (this != &f) {
-            delete[] name;
-            delete[] owner;
-            name = new char[strlen(f.name) + 1];
-            strcpy(name, f.name);
-            owner = new char[strlen(f.owner) + 1];
-            strcpy(owner, f.owner);
-            size = f.size;
-            ext = f.ext;
-        }
-        return *this;
-    }
-    void print() const {
-        cout << "File name: " << name << ".";
-        if (ext == 0) cout << "pdf";
-        else if (ext == 1) cout << "txt";
-        else cout << "exe";
-        cout << "\nFile owner: " << owner;
-        cout << "\nFile size: " << size << "\n";
-    }
-    bool equals(const File& that) const {
-        return strcmp(name, that.name) == 0 && strcmp(owner, that.owner) == 0 && ext == that.ext;
-    }
-    bool equalsType(const File& that) const {
-        return strcmp(name, that.name) == 0 && ext == that.ext;
-    }
+	File(const char *name="", const char *owner="", int size=0, Extension ext=pdf) {
+		this->name=new char[strlen(name) + 1];
+		strcpy(this->name, name);
+		this->owner=new char[strlen(owner) + 1];
+		strcpy(this->owner, owner);
+		this->size=size;
+		this->ext = ext;
+	}
+	File(const File &f) {
+		copy(f);
+	}
+	File &operator=(const File &f) {
+		if (this != &f) {
+			delete [] name;
+			delete [] owner;
+			copy(f);
+		}
+		return *this;
+	}
+	~File() {
+		delete [] name;
+		delete [] owner;
+	}
+	void print() {
+		cout<<"File name: "<<name;
+		if (ext==pdf) {
+			cout<<".pdf";
+		}else if (ext==txt) {
+			cout<<".txt";
+		}else {
+			cout<<".exe";
+		}
+		cout<<endl<<"File owner: "<<owner<<endl<<"File size: "<<size<<endl;
+	}
+	bool equals(const File &f) {
+		return (strcmp(name, f.name)==0 && ext==f.ext && strcmp(owner, f.owner)==0);
+	}
+	bool equalsType(const File &f) {
+		return (strcmp(name, f.name)==0 && ext==f.ext);
+	}
 };
 class Folder {
 private:
-    char* name;
-    int fileCount;
-    File* files;
+	char *name;
+	File *files;
+	int n;
 public:
-    Folder(const char* folderName) {
-        name = new char[strlen(folderName) + 1];
-        strcpy(name, folderName);
-        fileCount = 0;
-        files = nullptr;
-    }
-    ~Folder() {
-        delete[] name;
-        delete[] files;
-    }
-    void print() const {
-        cout << "Folder name: " << name << "\n";
-        for (int i = 0; i < fileCount; i++) {
-            files[i].print();
-        }
-    }
-    void add(const File& file) {
-        File* temp = new File[fileCount + 1];
-        for (int i = 0; i < fileCount; i++) {
-            temp[i] = files[i];
-        }
-        temp[fileCount] = file;
-        delete[] files;
-        files = temp;
-        fileCount++;
-    }
-    void remove(const File& file) {
-        for (int i = 0; i < fileCount; i++) {
-            if (files[i].equals(file)) {
-                File* temp = new File[fileCount - 1];
-                for (int j = 0, k = 0; j < fileCount; j++) {
-                    if (j != i) {
-                        temp[k++] = files[j];
-                    }
-                }
-                delete[] files;
-                files = temp;
-                fileCount--;
-                break;
-            }
-        }
-    }
+	Folder(const char *name="") {
+		this->name=new char[strlen(name) + 1];
+		strcpy(this->name, name);
+		this->n=0;
+		files=nullptr;
+	}
+	~Folder() {
+		delete [] name;
+		delete [] files;
+	}
+	void print() {
+		cout<<"Folder name: "<<name<<endl;
+		for (int i=0; i<n; i++) {
+			files[i].print();
+		}
+	}
+	void remove(const File &f) {
+		int k=0;
+		File *new_files=new File[n-1]; //samo prvo najdenata kje ja izbrishe
+		for (int i=0;i<n;i++) {
+			if (files[i].equals(f)) {
+				for (int j=0;j<n;j++) {
+					if (j!=i) {
+						new_files[k++]=files[j];
+					}
+				}
+				delete [] files;
+		        files=new_files;
+		        n--;
+		        break;
+			}
+		}
+	}
+	void add(const File &f) {
+		File *new_files=new File[n+1];
+		for (int i=0;i<n;i++) {
+			new_files[i]=files[i];
+		}
+		new_files[n]=f;
+		delete [] files;
+		files=new_files;
+		n++;
+	}
 };
 int main() {
 	char fileName[20];
