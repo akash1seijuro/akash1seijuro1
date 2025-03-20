@@ -1,96 +1,100 @@
 #include <iostream>
+#include <algorithm>
+#include <iomanip>
 #include <cstring>
+#include <cctype>
+#include <cmath>
+#include <fstream>
 using namespace std;
 class StockRecord {
+private:
     char id[12];
-    char company_name[50];
-    double price_of_actions;
+    char name[50];
+    float og_price;
     float current_price;
-    int actions_bought;
+    int actions;
 public:
-    StockRecord(const char *id="", const char *company_name="", double price_of_actions=0, int actions_bought=0) {
+    StockRecord(const char *id="", const char *name="", float og_price=0, int actions=0) {
         strcpy(this->id, id);
-        strcpy(this->company_name, company_name);
-        this->price_of_actions = price_of_actions;
-        this->actions_bought = actions_bought;
+        strcpy(this->name, name);
+        this->og_price = og_price;
+        this->actions = actions;
     }
-    void setNewPrice(double c){
-        this->current_price = (double)c;
+    void setNewPrice(double c) {
+        current_price = c;
     }
-    float getNewPrice() const{
-        return this->current_price;
+    double value() {
+        return actions*current_price;
     }
-    float value() const{
-        return this->current_price*this->actions_bought;
+    double profit() const{
+        return actions*(current_price-og_price);
     }
-    float profit() const{
-        return 1.0*this->actions_bought*(this->current_price-this->price_of_actions);
-    }
-    friend ostream &operator<<(ostream &out, const StockRecord &sr) {
-        out<<sr.company_name<<" "<<sr.actions_bought<<" "<<sr.price_of_actions<<" "<<sr.current_price<<" "<<sr.profit()<<endl;
+    friend ostream &operator<<(ostream &out, const StockRecord &s) {
+        out<<s.name<<" "<<s.actions<<" "<<s.og_price<<" "<<s.current_price<<" "<<s.profit()<<endl;
         return out;
     }
 };
 class Client {
-    char full_name[60];
+private:
+    char name[60];
     int id;
     StockRecord *stocks;
-    int stocks_count;
-    void copy(const Client &other) {
-        strcpy(this->full_name, other.full_name);
-        this->id = other.id;
-        this->stocks = new StockRecord[other.stocks_count];
-        for (int i = 0; i < other.stocks_count; i++) {
-            this->stocks[i] = other.stocks[i];
+    int n;
+    void copy(const Client &c) {
+        strcpy(name, c.name);
+        id = c.id;
+        n = c.n;
+        stocks = new StockRecord[c.n];
+        for (int i = 0; i < c.n; i++) {
+            stocks[i]= c.stocks[i];
         }
-        this->stocks_count = other.stocks_count;
     }
 public:
-    Client(const char *full_name="", int id=0) {
-        strcpy(this->full_name, full_name);
+    Client(const char *name="", int id=000000) {
+        strcpy(this->name, name);
         this->id = id;
-        this->stocks_count=0;
-        this->stocks=nullptr;
+        n=0;
+        stocks=nullptr;
     }
-    Client(const Client &other) {
-        copy(other);
+    Client(const Client &c) {
+        copy(c);
     }
-    Client &operator=(const Client &other) {
-        if (this != &other) {
+    Client &operator=(const Client &c) {
+        if (this!=&c) {
             delete [] stocks;
-            copy(other);
+            copy(c);
         }
         return *this;
     }
     ~Client() {
         delete [] stocks;
     }
-    float totalValue()const{
-        float total=0;
-        for (int i=0;i<stocks_count;i++) {
+    double totalValue() const{
+        double total=0.0;
+        for (int i = 0; i < n; i++) {
             total+=stocks[i].value();
         }
         return total;
     }
-    void operator+=(const StockRecord &sr) {
-        StockRecord *new_stocks = new StockRecord[stocks_count+1];
-        for (int i=0;i<stocks_count;i++) {
-            new_stocks[i] = stocks[i];
+    Client &operator+=(StockRecord &s) {
+        StockRecord *new_s = new StockRecord[n+1];
+        for (int i=0;i<n;i++) {
+            new_s[i] = stocks[i];
         }
-        new_stocks[stocks_count] = sr;
+        new_s[n]=s;
         delete [] stocks;
-        stocks = new_stocks;
-        stocks_count++;
+        stocks=new_s;
+        n++;
+        return *this;
     }
     friend ostream &operator<<(ostream &out, const Client &c) {
         out<<c.id<<" "<<c.totalValue()<<endl;
-        for (int i=0;i<c.stocks_count;i++) {
+        for (int i=0;i<c.n;i++) {
             out<<c.stocks[i];
         }
         return out;
     }
 };
-
 int main(){
 
     int test;
