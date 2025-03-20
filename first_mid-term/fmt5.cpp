@@ -1,39 +1,40 @@
 #include <iostream>
+#include <algorithm>
+#include <iomanip>
 #include <cstring>
 #include <cctype>
 #include <cmath>
 #include <fstream>
 using namespace std;
 class Gitara {
-private:
-	char serial_number[25];
+	char id[25];
 	float price;
-	int production_year;
+	int year;
 	char type[40];
 public:
-	float getNabavna() {
+	char *getTip() {
+		return type;
+	}
+	float getNabavna() const{
 		return price;
 	}
+	int getGodina() const{
+		return year;
+	}
 	char *getSeriski() {
-		return serial_number;
+		return id;
 	}
-	int getGodina() {
-		return this->production_year;
-	}
-	char *getTip(){
-	    return this->type;
-	}
-	Gitara(const char *type="", const char *serial_number="", int production_year=0, float price=0) {
-		strcpy(this->serial_number, serial_number);
+	Gitara(const char *type="", const char *id="", int year=1900, float price=0) {
+		strcpy(this->id, id);
 		this->price = price;
-		this->production_year = production_year;
+		this->year = year;
 		strcpy(this->type, type);
 	}
-	bool daliIsti(Gitara &g) {
-		return strcmp(g.serial_number, serial_number) == 0;
+	bool daliIsti(Gitara g) {
+		return (strcmp(g.id, id) == 0);
 	}
 	void pecati() {
-		cout<<serial_number<<" "<<type<<" "<<price<<endl;
+		cout<<id<<" "<<type<<" "<<price<<endl;
 	}
 };
 class Magacin {
@@ -41,93 +42,65 @@ private:
 	char name[30];
 	char location[60];
 	Gitara *gitari;
-	int size;
-	int opening_year;
-	void copy(const Magacin &m) {
-		strcpy(name, m.name);
-		strcpy(location, m.location);
-		this->gitari = new Gitara[m.size];
-		for (int i=0;i<m.size;i++) {
-			this->gitari[i] = m.gitari[i];
-		}
-		this->size = m.size;
-		this->opening_year = m.opening_year;
-	}
+	int n;
+	int year;
 public:
-	int getOpeningYear() {
-		return this->opening_year;
-	}
-	Magacin(const char*name="", const char*location="", int opening_year=1900) {
+	Magacin(const char *name="", const char *location="", int year=1900) {
 		strcpy(this->name, name);
 		strcpy(this->location, location);
-		this->opening_year = opening_year;
-		this->size = 0;
-		this->gitari=nullptr;
-	}
-	Magacin(const Magacin &m) {
-		copy(m);
-	}
-	Magacin& operator=(const Magacin &m) {
-		if (this!=&m) {
-			delete [] gitari;
-			copy(m);
-		}
-		return *this;
-	}
-	~Magacin() {
-		if (gitari!=nullptr) {
-			delete [] gitari;
-		}
+		this->year = year;
+		n=0;
+		gitari=nullptr;
 	}
 	double vrednost() {
-		double sum=0;
-		for (int i=0;i<size;i++) {
-			sum+=this->gitari[i].getNabavna();
+		double total=0.0;
+		for (int i=0;i<n;i++) {
+			total+=gitari[i].getNabavna();
 		}
-		return sum;
+		return total;
 	}
 	void dodadi(Gitara d) {
-		Gitara *new_gitari = new Gitara[size+1];
-		for (int i=0;i<size;i++) {
-			new_gitari[i] = this->gitari[i];
+		Gitara *new_gitari=new Gitara[n+1];
+		for (int i=0;i<n;i++) {
+			new_gitari[i]=gitari[i];
 		}
-		new_gitari[size]=d;
+		new_gitari[n]=d;
 		delete [] gitari;
 		gitari=new_gitari;
-		size++;
+		n++;
 	}
 	void prodadi(Gitara p) {
-		int count=0;
-		for (int i=0;i<size;i++) {
+		int k=0;
+		int counter=0;
+		for (int i=0;i<n;i++) {
 			if (gitari[i].daliIsti(p)) {
-				count++;
+				counter++;
 			}
 		}
-		if (count==0) {
+		if (counter==0) {
 			return;
 		}
-		Gitara *new_gitari = new Gitara[size-count];
-		int j=0;
-		for (int i=0;i<size;i++) {
+		Gitara *new_gitari=new Gitara[n-counter];
+		for (int i=0;i<n;i++) {
 			if (!(gitari[i].daliIsti(p))) {
-				new_gitari[j++] = gitari[i];
+				new_gitari[k++]=gitari[i];
 			}
 		}
 		delete [] gitari;
 		gitari=new_gitari;
-		size-=count;
+		n-=counter;
 	}
 	void pecati(bool daliNovi) {
 		cout<<name<<" "<<location<<endl;
-		if (!(daliNovi)) {
-			for (int i=0;i<size;i++) {
-				gitari[i].pecati();
-			}
-		}else {
-			for (int i=0;i<size;i++) {
-				if (gitari[i].getGodina()>opening_year) {
+		if (daliNovi==true) {
+			for (int i=0;i<n;i++) {
+				if (gitari[i].getGodina()>year) {
 					gitari[i].pecati();
 				}
+			}
+		}else {
+			for (int i=0;i<n;i++) {
+				gitari[i].pecati();
 			}
 		}
 	}
