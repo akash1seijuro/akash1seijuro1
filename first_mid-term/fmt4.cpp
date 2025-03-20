@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+#include <iomanip>
 #include <cstring>
 #include <cctype>
 #include <cmath>
@@ -7,31 +9,19 @@ using namespace std;
 class Patnik {
 private:
     char name[100];
-    int cls; //1 or 2
+    int cls;
     bool bicycle;
 public:
-    char* getName() {
-        return this->name;
+    int getCls() {
+        return cls;
     }
-    int getCls() const{
-        return this->cls;
+    bool getBicycle() {
+        return bicycle;
     }
-    bool getBicycle() const{
-        return this->bicycle;
-    }
-    void setName(char *name) {
+    Patnik(const char *name="", int cls=2, bool bicycle=false) {
         strcpy(this->name, name);
-    }
-    void setCls(int cls) {
         this->cls = cls;
-    }
-    void setBicycle(bool bicycle) {
         this->bicycle = bicycle;
-    }
-    Patnik(char *name="", int cls=2, bool bicycle=false) {
-        strcpy(this->name,name);
-        this->cls=cls;
-        this->bicycle=bicycle;
     }
     friend ostream &operator<<(ostream &out, const Patnik &p) {
         out<<p.name<<endl<<p.cls<<endl<<p.bicycle<<endl;
@@ -40,97 +30,72 @@ public:
 };
 class Voz {
 private:
-    char final_destination[100];
+    char location[100];
     Patnik *patnici;
-    int size;
-    int allowed_bicycles;
-    void copy(const Voz &v) {
-        strcpy(final_destination, v.final_destination);
-        this->patnici = new Patnik[v.size];
-        for (int i=0;i<v.size;i++) {
-            this->patnici[i]=v.patnici[i];
-        }
-        this->size=v.size;
-        this->allowed_bicycles=v.allowed_bicycles;
-    }
+    int n;
+    int allowed;
 public:
-    Voz(const char *final_destination="", int allowed_bicycles=0) {
-        strcpy(this->final_destination,final_destination);
-        this->allowed_bicycles = allowed_bicycles;
-        this->size=0;
-        this->patnici = nullptr;
-    }
-    Voz(const Voz &v) {
-        copy(v);
-    }
-    Voz &operator=(const Voz &v) {
-        if (this!=&v) {
-            delete [] patnici;
-            copy(v);
-        }
-        return *this;
-    }
-    ~Voz() {
-        if (patnici!=nullptr) {
-            delete [] patnici;
-        }
+    Voz(const char *location="", int allowed=0) {
+        strcpy(this->location, location);
+        this->allowed = allowed;
+        this->n=0;
+        this->patnici=nullptr;
     }
     Voz &operator+=(Patnik &p) {
-        int allowed=allowed_bicycles;
-        if (p.getBicycle() && allowed<=0) {
+        int current_allowed=allowed;
+        for (int i=0;i<n;i++) {
+            if (patnici[i].getBicycle()==true) {
+                current_allowed++;
+            }
+        }
+        if (p.getBicycle()==true && current_allowed<=0) {
             return *this;
         }
-        Patnik *new_patnici = new Patnik[this->size+1];
-        for (int i=0;i<size;i++) {
+        Patnik *new_patnici=new Patnik[n+1];
+        for (int i=0;i<n;i++) {
             new_patnici[i]=patnici[i];
         }
-        new_patnici[size]=p;
+        if (p.getBicycle()==true) {
+            current_allowed--;
+        }
+        new_patnici[n]=p;
         delete [] patnici;
         patnici=new_patnici;
-        size++;
-        if (p.getBicycle()) {
-            allowed--;
-        }
+        this->n++;
         return *this;
     }
-    friend ostream &operator<<(ostream &out, const Voz &v) {
-        out<<v.final_destination<<endl;
-        for (int i=0;i<v.size;i++) {
-            out<<v.patnici[i]<<endl;
+    friend ostream &operator<<(ostream &out, const Voz &p) {
+        out<<p.location<<endl;
+        for (int i=0;i<p.n;i++) {
+            out<<p.patnici[i]<<endl;
         }
         return out;
     }
     void patniciNemaMesto() {
-        int first_class_left_out=0,second_class_left_out=0,max_available=allowed_bicycles;
-        int count_of_first_class=0;
-        for (int i=0;i<size;i++) {
-            if (patnici[i].getCls()==1) {
-                count_of_first_class++;
-            }
-        }
-        for (int i=0;i<size;i++) {
-            if (patnici[i].getCls()==1) {
-                if (patnici[i].getBicycle() && max_available>0) {
-                    max_available--;
-                }else if (patnici[i].getBicycle() && max_available<=0) {
-                    first_class_left_out++;
+        int current_allowed=allowed;
+        int first_class_out=0,second_class_out=0;
+        for (int i=0;i<n;i++) {
+            if (patnici[i].getCls()==1 && patnici[i].getBicycle()==true) {
+                if (current_allowed<=0) {
+                    first_class_out++;
+                }else {
+                    current_allowed--;
                 }
             }
         }
-        for (int i=0;i<size;i++) {
-            if (patnici[i].getCls()==2) {
-                if (patnici[i].getBicycle() && max_available>0) {
-                    max_available--;
-                }else if (patnici[i].getBicycle() && max_available<=0) {
-                    second_class_left_out++;
+        for (int i=0;i<n;i++) {
+            if (patnici[i].getCls()==2 && patnici[i].getBicycle()==true) {
+                if (current_allowed<=0) {
+                    second_class_out++;
+                }else {
+                    current_allowed--;
                 }
             }
         }
-        cout<<"Brojot na patnici od 1-va klasa koi ostanale bez mesto e: "<<first_class_left_out<<endl;
-        cout<<"Brojot na patnici od 2-ra klasa koi ostanale bez mesto e: "<<second_class_left_out<<endl;
+        cout<<"Brojot na patnici od 1-va klasa koi ostanale bez mesto e: "<<first_class_out<<endl;
+        cout<<"Brojot na patnici od 2-ra klasa koi ostanale bez mesto e: "<<second_class_out<<endl;
     }
 };
-
 int main()
 {
     Patnik p;
