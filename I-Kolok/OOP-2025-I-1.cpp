@@ -1,4 +1,3 @@
-//klasa Satellite i Country, Satellite imashe svoj char name[51], char
 #include <iostream>
 #include <cstring>
 using namespace std;
